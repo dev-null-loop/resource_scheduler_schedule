@@ -1,4 +1,4 @@
-resource "oci_resource_scheduler_schedule" "test_schedule" {
+resource "oci_resource_scheduler_schedule" "this" {
   action             = var.action
   compartment_id     = var.compartment_id
   recurrence_details = var.recurrence_details
@@ -7,45 +7,34 @@ resource "oci_resource_scheduler_schedule" "test_schedule" {
   description        = var.description
   display_name       = var.display_name
   freeform_tags      = var.freeform_tags
-  resource_filters {
-    attribute                         = var.schedule_resource_filters_attribute
-    condition                         = var.schedule_resource_filters_condition
-    should_include_child_compartments = var.schedule_resource_filters_should_include_child_compartments
-    value {
-      namespace = var.schedule_resource_filters_value_namespace
-      tag_key   = var.schedule_resource_filters_value_tag_key
-      value     = var.schedule_resource_filters_value_value
+  dynamic "resource_filters" {
+    for_each = var.resource_filters[*]
+    iterator = rf
+    content {
+      attribute                         = rf.value.attribute
+      condition                         = rf.value.condition
+      should_include_child_compartments = rf.value.should_include_child_compartments
+      value {
+	namespace = rf.value.value.namespace
+	tag_key   = rf.value.value.tag_key
+	value     = rf.value.value.value
+      }
     }
   }
-  resources {
-    id       = var.schedule_resources_id
-    metadata = var.schedule_resources_metadata
-    parameters {
-      parameter_type = var.schedule_resources_parameters_parameter_type
-      value          = var.schedule_resources_parameters_value
+  dynamic "resources" {
+    for_each = var.resources
+    content {
+      id       = resources.value.id
+      metadata = resources.value.metadata
+      dynamic "parameters" {
+	for_each = resources.value.parameters[*]
+	content {
+	  parameter_type = parameters.value.parameter_type
+	  value          = parameters.value.value
+	}
+      }
     }
   }
-  time_ends   = var.schedule_time_ends
-  time_starts = var.schedule_time_starts
-
-  # resource_filters {
-  #   attribute = "DEFINED_TAGS"
-  #   value {
-  #     namespace = "SampleNamespace"
-  #     tag_key   = "SampleTagKey"
-  #     value     = "SampleValue"
-  #   }
-  # }
-  # resource_filters {
-  #   attribute = "LIFECYCLE_STATE"
-  #   value {
-  #     value = "SampleLifecycleState"
-  #   }
-  # }
-  # resource_filters {
-  #   attribute = "COMPARTMENT_ID"
-  #   value {
-  #     value = var.compartment_id
-  #   }
-  # }
+  time_ends   = var.time_ends
+  time_starts = var.time_starts
 }

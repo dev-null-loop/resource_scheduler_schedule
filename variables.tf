@@ -60,15 +60,15 @@ variable "resource_filters" {
 
 variable "resources" {
   description = "(Optional) (Updatable) This is the list of resources to which the scheduled operation is applied."
-  type = object({
+  type = list(object({
     id       = string
     metadata = optional(map(string))
     parameters = optional(object({
-      parameter_type = string
-      value          = string
+      parameter_type = optional(string)
+      value          = optional(string)
     }))
-  })
-  default = null
+  }))
+  default = []
 }
 
 variable "time_ends" {
